@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopie/consts/colors.dart';
+import 'package:shopie/consts/my_icons.dart';
+import 'package:shopie/provider/cart_provider.dart';
 import 'package:shopie/provider/dark_theme_provider.dart';
+import 'package:shopie/provider/products.dart';
+import 'package:shopie/screens/cart.dart';
+import 'package:shopie/screens/wishlist.dart';
+import 'package:shopie/widgets/feeds_product.dart';
 
 class ProductDetails extends StatefulWidget {
   static const routeName = '/ProductDetails';
@@ -16,6 +22,11 @@ class _ProductDetailsState extends State<ProductDetails> {
   @override
   Widget build(BuildContext context) {
     final themeState = Provider.of<DarkThemeProvider>(context);
+    final productsData = Provider.of<Products>(context);
+    final productId = ModalRoute.of(context).settings.arguments as String;
+    final prodAttr = productsData.findById(productId);
+    final productsList = productsData.products;
+    final cartProvider = Provider.of<CartProvider>(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -23,8 +34,7 @@ class _ProductDetailsState extends State<ProductDetails> {
             foregroundDecoration: BoxDecoration(color: Colors.black12),
             height: MediaQuery.of(context).size.height * 0.45,
             width: double.infinity,
-            child: Image.network(
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4PdHtXka2-bDDww6Nuect3Mt9IwpE4v4HNw&usqp=CAUD'),
+            child: Image.network(prodAttr.imageUrl),
           ),
           SingleChildScrollView(
             padding: EdgeInsets.only(top: 16.0, bottom: 20.0),
@@ -53,7 +63,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                           ),
                         ),
                       ),
-											 Material(
+                      Material(
                         color: Colors.transparent,
                         child: InkWell(
                           splashColor: Colors.purple.shade200,
@@ -72,42 +82,309 @@ class _ProductDetailsState extends State<ProductDetails> {
                     ],
                   ),
                 ),
-								Container(
-									color: Theme.of(context).scaffoldBackgroundColor,
-									child: Padding(
-									  padding: const EdgeInsets.all(16.0),
-									  child: Column(
-									  	crossAxisAlignment: CrossAxisAlignment.start,
-									  	children: [
-									  		Container(
-									  			width: MediaQuery.of(context).size.width * 0.9,
-									  			child: Text(
-									  				'title',
-									  				maxLines: 2,
-									  				style: TextStyle(
-									  					// color: Theme.of(context).textSelectionColor,
-									  					fontSize: 28.0,
-									  					fontWeight: FontWeight.w600,
-									  				),
-									  			),
-									  		),
-									  		SizedBox(height: 8),
-									  		Text(
-									  			'US \$ 15',
-									  			style: TextStyle(
-									  				color: themeState.darkTheme 
-									  				? Theme.of(context).disabledColor
-									  				: ColorsConsts.subTitle,
-									  				fontSize: 21.0,
-									  				fontWeight: FontWeight.bold,
-									  			),
-									  		),
-									  	],
-									  ),
-									),
-									
-								),
+                Container(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: MediaQuery.of(context).size.width * 0.9,
+                              child: Text(
+                                prodAttr.title,
+                                maxLines: 2,
+                                style: TextStyle(
+                                  // color: Theme.of(context).textSelectionColor,
+                                  fontSize: 28.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'US \$ ${prodAttr.price}',
+                              style: TextStyle(
+                                color: themeState.darkTheme
+                                    ? Theme.of(context).disabledColor
+                                    : ColorsConsts.subTitle,
+                                fontSize: 21.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 3.0),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Divider(
+                          thickness: 1,
+                          color: Colors.grey,
+                          height: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 5.0),
+                      Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          prodAttr.description,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 21.0,
+                            color: themeState.darkTheme
+                                ? Theme.of(context).disabledColor
+                                : ColorsConsts.subTitle,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 5.0),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Divider(
+                          thickness: 1,
+                          color: Colors.grey,
+                          height: 1,
+                        ),
+                      ),
+                      _details(themeState.darkTheme, 'Brand: ', prodAttr.brand),
+                      _details(themeState.darkTheme, 'Quantity: ',
+                          '${prodAttr.quantity} Left'),
+                      _details(themeState.darkTheme, 'Category: ',
+                          prodAttr.productCategoryName),
+                      _details(themeState.darkTheme, 'Popularity: ',
+                          prodAttr.isPopular ? 'Popular' : 'Barely Know'),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      Divider(
+                        thickness: 1,
+                        color: Colors.grey,
+                        height: 1,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // const SizedBox(height: 15.0),
+                Container(
+                  color: Theme.of(context).backgroundColor,
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 10.0),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'No review yet',
+                          style: TextStyle(
+                            color: Theme.of(context).textSelectionColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 21.0,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Text(
+                          'Be the first review',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 20.0,
+                            color: themeState.darkTheme
+                                ? Theme.of(context).disabledColor
+                                : ColorsConsts.subTitle,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 70,
+                      ),
+                      Divider(
+                        thickness: 1,
+                        color: Colors.grey,
+                        height: 1,
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(8.0),
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  child: Text(
+                    'Suggested products:',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(bottom: 30),
+                  width: double.infinity,
+                  height: 340,
+                  child: ListView.builder(
+                      itemCount: 7,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (BuildContext btx, int index) {
+                        return ChangeNotifierProvider.value(
+                            value: productsList[index], child: FeedProduct());
+                      }),
+                ),
               ],
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              title: Text(
+                'Detail',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+              actions: [
+                IconButton(
+                    icon: Icon(
+                      MyAppIcons.wishlist,
+                      color: ColorsConsts.favColor,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(WishlistScreen.routeName);
+                    }),
+                IconButton(
+                    icon: Icon(
+                      MyAppIcons.cart,
+                      color: ColorsConsts.cartColor,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(CartScreen.routeName);
+                    }),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    height: 50,
+                    child: RaisedButton(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(side: BorderSide.none),
+                      color: Colors.redAccent.shade400,
+                      onPressed:
+                          cartProvider.getCartItems.containsKey(productId)
+                              ? (){}
+                              : () {
+                                  cartProvider.addProductToCart(
+                                      productId,
+                                      prodAttr.price,
+                                      prodAttr.title,
+                                      prodAttr.imageUrl);
+                                },
+                      child: Text(
+                        cartProvider.getCartItems.containsKey(productId)
+                            ? 'In cart'
+                            : 'Add to cart'.toUpperCase(),
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    height: 50,
+                    child: RaisedButton(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(side: BorderSide.none),
+                      color: Theme.of(context).backgroundColor,
+                      onPressed: () {},
+                      child: Row(
+                        children: [
+                          Text(
+                            'Buy Now'.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Theme.of(context).textSelectionColor,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Icon(
+                            Icons.payment,
+                            color: Colors.green.shade700,
+                            size: 19,
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    height: 50,
+                    color: themeState.darkTheme
+                        ? Theme.of(context).disabledColor
+                        : ColorsConsts.subTitle,
+                    child: InkWell(
+                      splashColor: ColorsConsts.favColor,
+                      onTap: () {},
+                      child: Center(
+                        child: Icon(
+                          MyAppIcons.wishlist,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _details(bool themeState, String title, String info) {
+    return Padding(
+      padding: EdgeInsets.only(top: 15, left: 16, right: 16),
+      child: Row(
+        // mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: Theme.of(context).textSelectionColor,
+              fontSize: 21.0,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            info,
+            style: TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.w400,
+              color: themeState
+                  ? Theme.of(context).disabledColor
+                  : ColorsConsts.subTitle,
             ),
           ),
         ],

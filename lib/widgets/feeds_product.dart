@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart';
+import 'package:provider/provider.dart';
 import 'package:shopie/inner_screens/product_details.dart';
+import 'package:shopie/models/product.dart';
 
 class FeedProduct extends StatefulWidget {
+	
+
   @override
   _FeedProductState createState() => _FeedProductState();
 }
@@ -10,10 +14,11 @@ class FeedProduct extends StatefulWidget {
 class _FeedProductState extends State<FeedProduct> {
   @override
   Widget build(BuildContext context) {
+		final productsAttributes = Provider.of<Product>(context);
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: InkWell(
-				onTap: () => Navigator.of(context).pushNamed(ProductDetails.routeName),
+				onTap: () => Navigator.of(context).pushNamed(ProductDetails.routeName, arguments: productsAttributes.id),
         child: Container(
           width: 250,
           height: 290,
@@ -34,7 +39,7 @@ class _FeedProductState extends State<FeedProduct> {
                           minHeight: 100,
                           maxHeight: MediaQuery.of(context).size.height * 0.3),
                       child: Image.network(
-                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4PdHtXka2-bDDww6Nuect3Mt9IwpE4v4HNw&usqp=CAUD',
+                        productsAttributes.imageUrl,
                         fit: BoxFit.fitWidth,
                       ),
                     ),
@@ -64,9 +69,9 @@ class _FeedProductState extends State<FeedProduct> {
                       height: 4,
                     ),
                     Text(
-                      'Description',
+                      productsAttributes.description,
                       overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
+                      maxLines: 1,
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.black,
@@ -76,7 +81,7 @@ class _FeedProductState extends State<FeedProduct> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Text(
-                        '\$ 160.99',
+                        '\$ ${productsAttributes.price}',
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         style: TextStyle(
@@ -90,7 +95,7 @@ class _FeedProductState extends State<FeedProduct> {
 									mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Quantity: 2',
+                          'Quantity: ${productsAttributes.quantity}',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey,

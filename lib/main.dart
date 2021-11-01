@@ -1,12 +1,17 @@
 import 'package:shopie/consts/theme_data.dart';
+import 'package:shopie/inner_screens/categories_feeds.dart';
 import 'package:shopie/inner_screens/product_details.dart';
+import 'package:shopie/provider/cart_provider.dart';
 import 'package:shopie/provider/dark_theme_provider.dart';
+import 'package:shopie/provider/products.dart';
 import 'package:shopie/screens/bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopie/screens/cart.dart';
 import 'package:shopie/screens/feeds.dart';
 import 'package:shopie/screens/wishlist.dart';
+
+import 'inner_screens/brands_navigation_rail.dart';
 
 void main() {
   runApp(MyApp());
@@ -37,7 +42,11 @@ class _MyAppState extends State<MyApp> {
         providers: [
           ChangeNotifierProvider(create: (_) {
             return themeChangeProvider;
-          })
+          }),
+					ChangeNotifierProvider(create: (_) =>
+            Products(),
+          ),
+					ChangeNotifierProvider(create: (_) => CartProvider(),),
         ],
         child:
             Consumer<DarkThemeProvider>(builder: (context, themeData, child) {
@@ -47,12 +56,13 @@ class _MyAppState extends State<MyApp> {
             home: BottomBarScreen(),
 						routes: {
               //   '/': (ctx) => LandingPage(),
-              // BrandNavigationRailScreen.routeName: (ctx) =>
-              //     BrandNavigationRailScreen(),
+              BrandNavigationRailScreen.routeName: (ctx) =>
+                  BrandNavigationRailScreen(),
               CartScreen.routeName: (ctx) => CartScreen(),
               FeedsScreen.routeName: (ctx) => FeedsScreen(),
               WishlistScreen.routeName: (ctx) => WishlistScreen(),
 							ProductDetails.routeName: (ctx) => ProductDetails(),
+							CategoriesFeedsScreen.routeName: (ctx) => CategoriesFeedsScreen(),
             },
           );
         }));

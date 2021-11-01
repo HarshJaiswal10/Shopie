@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:provider/provider.dart';
 import 'package:shopie/consts/colors.dart';
+import 'package:shopie/provider/cart_provider.dart';
 import 'package:shopie/widgets/cart_empty.dart';
 import 'package:shopie/widgets/cart_full.dart';
 
@@ -8,8 +10,9 @@ class CartScreen extends StatelessWidget {
   static const routeName = '/CartScreen';
   @override
   Widget build(BuildContext context) {
-    List products = [];
-    return !products.isEmpty
+		final cartProvider = Provider.of<CartProvider>(context);
+    
+    return cartProvider.getCartItems.isEmpty
         ? Scaffold(body: CartEmpty())
         : Scaffold(
             bottomSheet: checkoutSection(context),
@@ -22,9 +25,20 @@ class CartScreen extends StatelessWidget {
             body: Container(
 							margin: EdgeInsets.only(bottom: 60),
               child: ListView.builder(
-                itemCount: 5,
+                itemCount: cartProvider.getCartItems.length,
                 itemBuilder: (BuildContext ctx, int index) {
-                  return CartFull();
+                  return ChangeNotifierProvider.value(
+										value: cartProvider.getCartItems.values.toList()[index],
+                    child: CartFull(
+											productId: cartProvider.getCartItems.keys.toList()[index],
+										// id: cartProvider.getCartItems.values.toList()[index].id,
+										// productId: cartProvider.getCartItems.keys.toList()[index],
+										// price: cartProvider.getCartItems.values.toList()[index].price,
+										// title: cartProvider.getCartItems.values.toList()[index].title,
+										// imageUrl: cartProvider.getCartItems.values.toList()[index].imageUrl,
+										// quantity: cartProvider.getCartItems.values.toList()[index].quantity,
+									),
+                  );
                 },
               ),
             ),

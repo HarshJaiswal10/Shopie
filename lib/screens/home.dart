@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:backdrop/backdrop.dart';
+import 'package:provider/provider.dart';
 import 'package:shopie/consts/colors.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:shopie/inner_screens/brands_navigation_rail.dart';
+import 'package:shopie/provider/products.dart';
+import 'package:shopie/screens/feeds.dart';
 import 'package:shopie/widgets/backlayer.dart';
 import 'package:shopie/widgets/category.dart';
 import 'package:shopie/widgets/popular_product.dart';
@@ -30,6 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
   @override
   Widget build(BuildContext context) {
+		final productsData = Provider.of<Products>(context);
+		final popularItems = productsData.PopularProducts;
     return Scaffold(
      
       body: BackdropScaffold(
@@ -138,7 +144,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   autoplay: true,
                   viewportFraction: 0.8,
                   scale: 0.9,
-                  onTap: (index){},
+                  onTap: (index){
+										Navigator.of(context).pushNamed(
+											BrandNavigationRailScreen.routeName,
+											arguments: {
+												index,
+											}
+										);			
+									},
                   itemBuilder: (BuildContext ctx, int index) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(10),
@@ -159,7 +172,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Spacer(),
                     FlatButton(
-                      onPressed: () {},
+                      onPressed: () {
+												Navigator.of(context).pushNamed(FeedsScreen.routeName, arguments: 'popular');
+											},
                       child: Text(
                         'View all...',
                         style: TextStyle(
@@ -177,9 +192,17 @@ class _HomeScreenState extends State<HomeScreen> {
 								margin: EdgeInsets.symmetric(horizontal: 3),
 								child: ListView.builder(
 									scrollDirection: Axis.horizontal,
-									itemCount: 8,
+									itemCount: popularItems.length,
 									itemBuilder: (BuildContext ctx, int index){
-										return PopularProducts();
+										return ChangeNotifierProvider.value(
+											value: popularItems[index],
+											child: PopularProducts(
+										  	// imageUrl: popularItems[index].imageUrl,
+										  	// title: popularItems[index].title,
+										  	// description: popularItems[index].description,
+										  	// price: popularItems[index].price,
+										  ),
+										);
 									}
 								),
 							),
