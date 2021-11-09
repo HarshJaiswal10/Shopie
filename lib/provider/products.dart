@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:shopie/models/product.dart';
-import 'package:shopie/widgets/popular_product.dart';
 
 class Products with ChangeNotifier{
 	List<Product> _products = [
@@ -601,5 +600,10 @@ class Products with ChangeNotifier{
 	List<Product> findByBrand (String brandName){
 		List _BrandList = _products.where((element) => element.brand.toLowerCase().contains(brandName.toLowerCase())).toList();
 		return _BrandList;
+	}
+
+	List<Product> searchQuery (String searchText){
+		List _searchList = _products.where((element) => element.title.toLowerCase().contains(searchText.toLowerCase())).toList();
+		return _searchList;
 	}
 }

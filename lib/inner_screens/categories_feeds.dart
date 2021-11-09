@@ -1,10 +1,8 @@
-import 'package:shopie/models/product.dart';
 import 'package:shopie/provider/products.dart';
 // import 'package:shopie/widgets/feeds_product.dart';
 import 'package:shopie/widgets/feeds_product.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shopie/provider/products.dart';
 
 class CategoriesFeedsScreen extends StatelessWidget {
   

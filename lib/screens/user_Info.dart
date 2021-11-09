@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:list_tile_switch/list_tile_switch.dart';
 import 'package:provider/provider.dart';
+import 'package:shopie/screens/cart.dart';
 import 'package:shopie/screens/wishlist.dart';
 
 class UserInfo extends StatefulWidget {
@@ -18,13 +19,13 @@ class _UserInfoState extends State<UserInfo> {
   var top = 0.0;
   @override
   void initState() {
-  
     super.initState();
-    _scrollController =ScrollController();
-    _scrollController.addListener(() {setState(() {
-      
-    });});
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      setState(() {});
+    });
   }
+
   @override
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
@@ -39,8 +40,8 @@ class _UserInfoState extends State<UserInfo> {
                 elevation: 4,
                 expandedHeight: 200,
                 pinned: true,
-                flexibleSpace: LayoutBuilder(
-                    builder: (BuildContext context, BoxConstraints constraints) {
+                flexibleSpace: LayoutBuilder(builder:
+                    (BuildContext context, BoxConstraints constraints) {
                   top = constraints.biggest.height;
                   return Container(
                     decoration: BoxDecoration(
@@ -115,38 +116,39 @@ class _UserInfoState extends State<UserInfo> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-										 Padding(
+                    Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: userTitle('User Bag')),
                     Divider(
                       thickness: 1,
                       color: Colors.grey,
                     ),
-										Material(
-											color: Colors.transparent,
-											child: InkWell(
-												splashColor: Theme.of(context).splashColor,
-												child: ListTile(
-													onTap: () => Navigator.of(context).pushNamed(WishlistScreen.routeName),
-													title: Text('Wishlist'),
-													trailing: Icon(Icons.chevron_right_rounded),
-													leading: Icon(MyAppIcons.wishlist),
-												),
-											),
-										),
-										Material(
-											color: Colors.transparent,
-											child: InkWell(
-												splashColor: Theme.of(context).splashColor,
-												child: ListTile(
-													onTap: () {},
-													title: Text('Cart'),
-													trailing: Icon(Icons.chevron_right_rounded),
-													leading: Icon(MyAppIcons.cart),
-												),
-											),
-										),
-
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        splashColor: Theme.of(context).splashColor,
+                        child: ListTile(
+                          onTap: () => Navigator.of(context)
+                              .pushNamed(WishlistScreen.routeName),
+                          title: Text('Wishlist'),
+                          trailing: Icon(Icons.chevron_right_rounded),
+                          leading: Icon(MyAppIcons.wishlist),
+                        ),
+                      ),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        splashColor: Theme.of(context).splashColor,
+                        child: ListTile(
+                          onTap: () => Navigator.of(context)
+                              .pushNamed(CartScreen.routeName),
+                          title: Text('Cart'),
+                          trailing: Icon(Icons.chevron_right_rounded),
+                          leading: Icon(MyAppIcons.cart),
+                        ),
+                      ),
+                    ),
                     Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: userTitle('User Information')),
@@ -179,7 +181,21 @@ class _UserInfoState extends State<UserInfo> {
                       switchActiveColor: Colors.indigo,
                       title: Text('Dark theme'),
                     ),
-                    userListTile('Logout', '', 4, context),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        splashColor: Theme.of(context).splashColor,
+                        child: ListTile(
+                          onTap: () {
+                            Navigator.canPop(context)
+                                ? Navigator.pop(context)
+                                : null;
+                          },
+                          title: Text('Logout'),
+                          leading: Icon(Icons.exit_to_app_rounded),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               )
@@ -190,9 +206,8 @@ class _UserInfoState extends State<UserInfo> {
       ),
     );
   }
- 
 
- Widget _buildFab() {
+  Widget _buildFab() {
     //starting fab position
     final double defaultTopMargin = 200.0 - 4.0;
     //pixels from top where scaling should start
@@ -217,17 +232,17 @@ class _UserInfoState extends State<UserInfo> {
       }
     }
 
-return  Positioned(
+    return Positioned(
       top: top,
       right: 16.0,
-      child:  Transform(
-        transform:  Matrix4.identity()..scale(scale),
+      child: Transform(
+        transform: Matrix4.identity()..scale(scale),
         alignment: Alignment.center,
-        child:  FloatingActionButton(
-					backgroundColor: Colors.purple,
+        child: FloatingActionButton(
+          backgroundColor: Colors.purple,
           heroTag: "btn1",
-          onPressed: (){},
-          child:  Icon(Icons.camera_alt_outlined),
+          onPressed: () {},
+          child: Icon(Icons.camera_alt_outlined),
         ),
       ),
     );

@@ -4,42 +4,48 @@ import 'package:provider/provider.dart';
 import 'package:shopie/consts/colors.dart';
 import 'package:shopie/inner_screens/product_details.dart';
 import 'package:shopie/models/cart_attr.dart';
+import 'package:shopie/provider/cart_provider.dart';
 import 'package:shopie/provider/dark_theme_provider.dart';
+import 'package:shopie/services/global_method.dart';
 
 class CartFull extends StatefulWidget {
-	final String productId;
+  final String productId;
 
   const CartFull({this.productId});
-	// final String id;
-	// final String productId;
-	// final double price;
-	// final int quantity;
-	// final String title;
-	// final String imageUrl;
+  // final String id;
+  // final String productId;
+  // final double price;
+  // final int quantity;
+  // final String title;
+  // final String imageUrl;
 
   // const CartFull(
-	// 	{ 
-	// 		@required this.id, 
-	// 		@required this.productId, 
-	// 		@required this.price, 
-	// 		@required this.quantity, 
-	// 		@required this.title, 
-	// 		@required this.imageUrl,
-	// 	}
-	// );
+  // 	{
+  // 		@required this.id,
+  // 		@required this.productId,
+  // 		@required this.price,
+  // 		@required this.quantity,
+  // 		@required this.title,
+  // 		@required this.imageUrl,
+  // 	}
+  // );
 
   @override
   _CartFullState createState() => _CartFullState();
 }
 
 class _CartFullState extends State<CartFull> {
+
   @override
   Widget build(BuildContext context) {
+		GlobalMethods globalMethods = GlobalMethods();
     final themeChange = Provider.of<DarkThemeProvider>(context);
-		final cartAttr = Provider.of<CartAttr>(context);
-		double subTotal= cartAttr.price* cartAttr.quantity;
+    final cartAttr = Provider.of<CartAttr>(context);
+    final cartProvider = Provider.of<CartProvider>(context);
+    double subTotal = cartAttr.price * cartAttr.quantity;
     return InkWell(
-			onTap: () => Navigator.of(context).pushNamed(ProductDetails.routeName, arguments: widget.productId),
+      onTap: () => Navigator.of(context)
+          .pushNamed(ProductDetails.routeName, arguments: widget.productId),
       child: Container(
         height: 135,
         margin: const EdgeInsets.all(10),
@@ -56,9 +62,8 @@ class _CartFullState extends State<CartFull> {
               width: 130,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage(
-                      cartAttr.imageUrl),
-                  fit: BoxFit.fill,
+                  image: NetworkImage(cartAttr.imageUrl),
+                  // fit: BoxFit.fill,
                 ),
               ),
             ),
@@ -85,7 +90,14 @@ class _CartFullState extends State<CartFull> {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(32.0),
-                            onTap: () {},
+                            onTap: () {
+                              globalMethods.showDialogg(
+                                  "Remove item!",
+                                  "Product will be removed from the cart!",
+                                  () => cartProvider
+                                      .removeItem(widget.productId), context);
+                              // cartProvider.removeItem(widget.productId);
+                            },
                             child: Container(
                               height: 50,
                               width: 50,
@@ -116,14 +128,16 @@ class _CartFullState extends State<CartFull> {
                       children: [
                         Text('Sub Total'),
                         SizedBox(width: 5),
-                        Text(
-                          '${subTotal}\$',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: themeChange.darkTheme
-                                ? Colors.brown.shade900
-                                : Theme.of(context).accentColor,
+                        FittedBox(
+                          child: Text(
+                            '${subTotal.toStringAsFixed(2)}\$',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: themeChange.darkTheme
+                                  ? Colors.brown.shade900
+                                  : Theme.of(context).accentColor,
+                            ),
                           ),
                         ),
                       ],
@@ -143,13 +157,21 @@ class _CartFullState extends State<CartFull> {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(4.0),
-                            onTap: () {},
+                            onTap: cartAttr.quantity < 2
+                                ? null
+                                : () {
+                                    cartProvider.reduceItemByOne(
+                                        widget.productId,
+                                       );
+                                  },
                             child: Container(
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Icon(
                                   Entypo.minus,
-                                  color: Colors.red,
+                                  color: cartAttr.quantity < 2
+                                      ? Colors.grey
+                                      : Colors.red,
                                   size: 22,
                                 ),
                               ),
@@ -180,7 +202,13 @@ class _CartFullState extends State<CartFull> {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(4.0),
-                            onTap: () {},
+                            onTap: () {
+                              cartProvider.addProductToCart(
+                                  widget.productId,
+                                  cartAttr.price,
+                                  cartAttr.title,
+                                  cartAttr.imageUrl);
+                            },
                             child: Container(
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),

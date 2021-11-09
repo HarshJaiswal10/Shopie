@@ -3,6 +3,7 @@ import 'package:badges/badges.dart';
 import 'package:provider/provider.dart';
 import 'package:shopie/inner_screens/product_details.dart';
 import 'package:shopie/models/product.dart';
+import 'package:shopie/widgets/feeds.dialog.dart';
 
 class FeedProduct extends StatefulWidget {
 	
@@ -105,7 +106,13 @@ class _FeedProductState extends State<FeedProduct> {
                         Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: () {},
+                            onTap: () async {
+															showDialog(
+																context: context, 
+																builder: (BuildContext context)=>
+																FeedDialog(productId: productsAttributes.id)
+															);
+														},
                             borderRadius: BorderRadius.circular(18),
                             child: Icon(
                               Icons.more_horiz,

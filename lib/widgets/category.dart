@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shopie/inner_screens/categories_feeds.dart';
-import 'package:shopie/screens/feeds.dart';
 
 class CategoryWidget extends StatefulWidget {
   final int index;
