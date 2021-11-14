@@ -232,7 +232,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                   width: double.infinity,
                   height: 340,
                   child: ListView.builder(
-                      itemCount: 7,
+                      itemCount: productsList.length< 7? productsList.length:7,
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (BuildContext btx, int index) {
                         return ChangeNotifierProvider.value(

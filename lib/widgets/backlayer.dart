@@ -1,6 +1,6 @@
 import 'package:shopie/consts/colors.dart';
 import 'package:shopie/consts/my_icons.dart';
-import 'package:shopie/inner_screens/upload_product_form.dart';
+import 'package:shopie/screens/upload_product_form.dart';
 import 'package:shopie/screens/cart.dart';
 import 'package:shopie/screens/feeds.dart';
 import 'package:flutter/material.dart';

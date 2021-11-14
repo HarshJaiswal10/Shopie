@@ -1,10 +1,15 @@
 import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/services.dart';
 import 'package:shopie/consts/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:shopie/services/global_method.dart';
 import 'package:wave/config.dart';
 import 'package:wave/wave.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   static const routeName = '/SignUpScreen';
@@ -22,7 +27,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String _fullName = '';
   int _phoneNumber;
   File _pickedImage;
+  String url;
   final _formKey = GlobalKey<FormState>();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  GlobalMethods _globalMethods = GlobalMethods();
+  bool _isLoading = false;
   @override
   void dispose() {
     _passwordFocusNode.dispose();
@@ -31,17 +40,60 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     final isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
+    var date = DateTime.now().toString();
+    var dateparse = DateTime.parse(date);
+    var formattedDate = '${dateparse.day}-${dateparse.month}-${dateparse.year}';
     if (isValid) {
       _formKey.currentState.save();
+      try {
+        if (_pickedImage == null) {
+          _globalMethods.authErrorHandle('Pick an image', context);
+        } else {
+          setState(() {
+            _isLoading = true;
+          });
+          final ref = FirebaseStorage.instance
+              .ref()
+              .child('usersImages')
+              .child(_fullName + '.jpg');
+          await ref.putFile(_pickedImage);
+          url = await ref.getDownloadURL();
+					await _auth.createUserWithEmailAndPassword(
+            email: _emailAddress.toLowerCase().trim(),
+            password: _password.trim());
+        final User user = _auth.currentUser;
+        final _uid = user.uid;
+				user.updateProfile(photoURL: url, displayName: _fullName);
+				user.reload();
+        await FirebaseFirestore.instance.collection('users').doc(_uid).set({
+          'id': _uid,
+          'name': _fullName,
+          'email': _emailAddress,
+          'phoneNumber': _phoneNumber,
+          'imageUrl': url,
+          'joinedAt': formattedDate,
+          'createdAt': Timestamp.now(),
+        });
+        Navigator.canPop(context) ? Navigator.pop(context) : null;
+        }
+        
+      } catch (error) {
+        _globalMethods.authErrorHandle(error.message, context);
+        print('error occured ${error.message}');
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _pickImageCamera() async {
     final picker = ImagePicker();
-    final pickedImage = await picker.getImage(source: ImageSource.camera);
+    final pickedImage = await picker.getImage(source: ImageSource.camera, imageQuality: 10);
     final pickedImageFile = File(pickedImage.path);
     setState(() {
       _pickedImage = pickedImageFile;
@@ -69,34 +121,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            Container(
-              height: MediaQuery.of(context).size.height * 0.95,
-              child: RotatedBox(
-                quarterTurns: 2,
-                child: WaveWidget(
-                  config: CustomConfig(
-                    gradients: [
-                      [ColorsConsts.gradiendFStart, ColorsConsts.gradiendLStart],
-                      [ColorsConsts.gradiendFEnd, ColorsConsts.gradiendLEnd],
-                    ],
-                    durations: [19440, 10800],
-                    heightPercentages: [0.20, 0.25],
-                    blur: MaskFilter.blur(BlurStyle.solid, 10),
-                    gradientBegin: Alignment.bottomLeft,
-                    gradientEnd: Alignment.topRight,
-                  ),
-                  waveAmplitude: 0,
-                  size: Size(
-                    double.infinity,
-                    double.infinity,
-                  ),
+      body: Stack(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height * 0.95,
+            child: RotatedBox(
+              quarterTurns: 2,
+              child: WaveWidget(
+                config: CustomConfig(
+                  gradients: [
+                    [ColorsConsts.gradiendFStart, ColorsConsts.gradiendLStart],
+                    [ColorsConsts.gradiendFEnd, ColorsConsts.gradiendLEnd],
+                  ],
+                  durations: [19440, 10800],
+                  heightPercentages: [0.20, 0.25],
+                  blur: MaskFilter.blur(BlurStyle.solid, 10),
+                  gradientBegin: Alignment.bottomLeft,
+                  gradientEnd: Alignment.topRight,
+                ),
+                waveAmplitude: 0,
+                size: Size(
+                  double.infinity,
+                  double.infinity,
                 ),
               ),
             ),
-            Column(
+          ),
+          SingleChildScrollView(
+            child: Column(
               children: [
                 SizedBox(
                   height: 30,
@@ -104,13 +156,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Stack(
                   children: [
                     Container(
-                      margin: EdgeInsets.symmetric(vertical: 30, horizontal: 30),
+                      margin:
+                          EdgeInsets.symmetric(vertical: 30, horizontal: 30),
                       child: CircleAvatar(
                         radius: 71,
                         backgroundColor: ColorsConsts.gradiendFEnd,
                         child: CircleAvatar(
                           radius: 65,
-												backgroundColor: ColorsConsts.gradiendFEnd,
+                          backgroundColor: ColorsConsts.gradiendFEnd,
                           backgroundImage: _pickedImage == null
                               ? null
                               : FileImage(_pickedImage),
@@ -146,7 +199,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         child: Row(
                                           children: [
                                             Padding(
-                                              padding: const EdgeInsets.all(8.0),
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
                                               child: Icon(
                                                 Icons.camera,
                                                 color: Colors.purpleAccent,
@@ -168,7 +222,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         child: Row(
                                           children: [
                                             Padding(
-                                              padding: const EdgeInsets.all(8.0),
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
                                               child: Icon(
                                                 Icons.image,
                                                 color: Colors.purpleAccent,
@@ -190,7 +245,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         child: Row(
                                           children: [
                                             Padding(
-                                              padding: const EdgeInsets.all(8.0),
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
                                               child: Icon(
                                                 Icons.remove_circle,
                                                 color: Colors.red,
@@ -319,6 +375,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               }
                               return null;
                             },
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
                             textInputAction: TextInputAction.next,
                             onEditingComplete: _submitForm,
                             keyboardType: TextInputType.phone,
@@ -337,35 +396,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             SizedBox(width: 10),
-                            ElevatedButton(
-                                style: ButtonStyle(
-                                    shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30.0),
-                                    side: BorderSide(
-                                        color: ColorsConsts.backgroundColor),
-                                  ),
-                                )),
-                                onPressed: _submitForm,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Sign up',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 17),
-                                    ),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Icon(
-                                      Feather.user,
-                                      size: 18,
-                                    )
-                                  ],
-                                )),
+                            _isLoading
+                                ? CircularProgressIndicator()
+                                : ElevatedButton(
+                                    style: ButtonStyle(
+                                        shape: MaterialStateProperty.all<
+                                            RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(30.0),
+                                        side: BorderSide(
+                                            color:
+                                                ColorsConsts.backgroundColor),
+                                      ),
+                                    )),
+                                    onPressed: _submitForm,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Sign up',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 17),
+                                        ),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Icon(
+                                          Feather.user,
+                                          size: 18,
+                                        )
+                                      ],
+                                    )),
                             SizedBox(width: 20),
                           ],
                         ),
@@ -373,8 +437,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ))
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
